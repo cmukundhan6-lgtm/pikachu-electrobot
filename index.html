@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pikachu ElectroBot ⚡</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pika-yellow: #FFD700;
+    --pika-yellow-dark: #FFA500;
+    --pika-red: #FF4444;
+    --pika-brown: #8B4513;
+    --pika-black: #1a1a1a;
+    --pika-white: #FFFDF0;
+    --chat-bg: #1a1a2e;
+    --chat-surface: #16213e;
+    --chat-card: #0f3460;
+    --electric-blue: #00D4FF;
+    --electric-glow: #FFD700;
+    --msg-user: #e94560;
+    --msg-bot: #0f3460;
+    --border-radius: 18px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--chat-bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  /* Animated electric background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(255,215,0,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(0,212,255,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 80%, rgba(233,69,96,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .lightning-bg {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .lightning-bg span {
+    position: absolute;
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, rgba(255,215,0,0.3), transparent);
+    animation: lightning-fall linear infinite;
+    opacity: 0;
+  }
+
+  @keyframes lightning-fall {
+    0% { transform: translateY(-100%) rotate(15deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 0.3; }
+    100% { transform: translateY(110vh) rotate(15deg); opacity: 0; }
+  }
+
+  .app-wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 720px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 0 12px 12px;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 8px 16px;
+    position: relative;
+  }
+
+  .pikachu-avatar {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+  }
+
+  .pikachu-face {
+    width: 80px;
+    height: 80px;
+    background: var(--pika-yellow);
+    border-radius: 50%;
+    position: relative;
+    border: 3px solid var(--pika-brown);
+    box-shadow: 0 0 20px rgba(255,215,0,0.4), 0 0 40px rgba(255,215,0,0.2);
+    animation: pika-float 3s ease-in-out infinite;
+  }
+
+  @keyframes pika-float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+  }
+
+  /* Eyes */
+  .pika-eye {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: var(--pika-black);
+    border-radius: 50%;
+    top: 22px;
+  }
+  .pika-eye.left { left: 16px; }
+  .pika-eye.right { right: 16px; }
+  .pika-eye::after {
+    content: '';
+    width: 5px;
+    height: 5px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+  }
+
+  /* Cheeks */
+  .pika-cheek {
+    position: absolute;
+    width: 18px;
+    height: 12px;
+    background: var(--pika-red);
+    border-radius: 50%;
+    bottom: 20px;
+    opacity: 0.85;
+  }
+  .pika-cheek.left { left: 7px; }
+  .pika-cheek.right { right: 7px; }
+
+  /* Nose */
+  .pika-nose {
+    position: absolute;
+    width: 8px;
+    height: 5px;
+    background: var(--pika-brown);
+    border-radius: 50%;
+    top: 33px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Mouth */
+  .pika-mouth {
+    position: absolute;
+    width: 20px;
+    height: 10px;
+    border-bottom: 3px solid var(--pika-brown);
+    border-radius: 0 0 50% 50%;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Ears */
+  .pika-ear {
+    position: absolute;
+    width: 18px;
+    height: 32px;
+    background: var(--pika-yellow);
+    border: 3px solid var(--pika-brown);
+    top: -28px;
+  }
+  .pika-ear.left {
+    border-radius: 80% 20% 0 0;
+    left: 8px;
+    transform: rotate(-12deg);
+  }
+  .pika-ear.right {
+    border-radius: 20% 80% 0 0;
+    right: 8px;
+    transform: rotate(12deg);
+  }
+  .pika-ear::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 18px;
+    background: var(--pika-black);
+    border-radius: 80% 20% 0 0;
+    top: 0;
+    left: 2px;
+  }
+  .pika-ear.right::after {
+    border-radius: 20% 80% 0 0;
+    left: unset;
+    right: 2px;
+  }
+
+  /* Electric bolt on avatar */
+  .pika-bolt {
+    position: absolute;
+    bottom: -4px;
+    right: -8px;
+    font-size: 24px;
+    animation: bolt-pulse 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 6px var(--electric-glow));
+  }
+  @keyframes bolt-pulse {
+    0%, 100% { transform: scale(1) rotate(-5deg); }
+    50% { transform: scale(1.3) rotate(5deg); }
+  }
+
+  .header-text { flex: 1; }
+
+  .header-title {
+    font-family: 'Bangers', cursive;
+    font-size: 2.2rem;
+    letter-spacing: 2px;
+    color: var(--pika-yellow);
+    text-shadow: 3px 3px 0 var(--pika-brown), 0 0 20px rgba(255,215,0,0.5);
+    line-height: 1;
+  }
+
+  .header-subtitle {
+    font-size: 0.78rem;
+    color: var(--electric-blue);
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 4px;
+    opacity: 0.9;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.3);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.72rem;
+    color: var(--electric-blue);
+    font-weight: 700;
+    margin-top: 6px;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    background: #00ff88;
+    border-radius: 50%;
+    animation: status-blink 2s ease-in-out infinite;
+    box-shadow: 0 0 6px #00ff88;
+  }
+  @keyframes status-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* Topic pills */
+  .topics-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 0 4px 16px;
+  }
+
+  .topic-pill {
+    background: rgba(255,215,0,0.08);
+    border: 1px solid rgba(255,215,0,0.25);
+    color: var(--pika-yellow);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 0.73rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .topic-pill:hover {
+    background: rgba(255,215,0,0.18);
+    border-color: var(--pika-yellow);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255,215,0,0.2);
+  }
+
+  /* ===== CHAT AREA ===== */
+  .chat-container {
+    flex: 1;
+    background: rgba(15, 52, 96, 0.3);
+    border: 1px solid rgba(255,215,0,0.15);
+    border-radius: 20px;
+    overflow-y: auto;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 380px;
+    max-height: 460px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,215,0,0.3) transparent;
+  }
+
+  .chat-container::-webkit-scrollbar { width: 4px; }
+  .chat-container::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.3); border-radius: 4px; }
+
+  /* Welcome message */
+  .welcome-card {
+    background: linear-gradient(135deg, rgba(255,215,0,0.08), rgba(0,212,255,0.06));
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 16px;
+    padding: 18px;
+    text-align: center;
+  }
+
+  .welcome-emoji { font-size: 2rem; margin-bottom: 8px; }
+
+  .welcome-card h3 {
+    font-family: 'Bangers', cursive;
+    font-size: 1.4rem;
+    letter-spacing: 1px;
+    color: var(--pika-yellow);
+    margin-bottom: 6px;
+  }
+
+  .welcome-card p {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.6;
+  }
+
+  /* Message bubbles */
+  .message {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    animation: msg-appear 0.3s ease-out;
+  }
+
+  @keyframes msg-appear {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .message.user { flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+  }
+
+  .msg-avatar.pika {
+    background: var(--pika-yellow);
+    border: 2px solid var(--pika-brown);
+    font-size: 1.3rem;
+    box-shadow: 0 0 10px rgba(255,215,0,0.4);
+  }
+
+  .msg-avatar.user-av {
+    background: var(--msg-user);
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 800;
+  }
+
+  .bubble {
+    max-width: 78%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    position: relative;
+  }
+
+  .message.bot .bubble {
+    background: rgba(15, 52, 96, 0.85);
+    border: 1px solid rgba(0,212,255,0.2);
+    color: rgba(255,255,255,0.92);
+    border-bottom-left-radius: 4px;
+  }
+
+  .message.user .bubble {
+    background: linear-gradient(135deg, #e94560, #c73652);
+    color: white;
+    border-bottom-right-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .bubble strong {
+    color: var(--pika-yellow);
+    font-weight: 800;
+  }
+
+  .bubble .pika-tag {
+    display: inline-block;
+    background: rgba(255,215,0,0.12);
+    color: var(--pika-yellow);
+    border-radius: 6px;
+    padding: 1px 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-right: 4px;
+  }
+
+  /* Typing indicator */
+  .typing-indicator {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  .typing-bubble {
+    background: rgba(15, 52, 96, 0.85);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+    padding: 14px 18px;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+  }
+
+  .typing-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--pika-yellow);
+    border-radius: 50%;
+    animation: typing-bounce 1.2s ease-in-out infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typing-bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-8px); opacity: 1; }
+  }
+
+  /* ===== INPUT AREA ===== */
+  .input-section {
+    padding: 14px 0 0;
+  }
+
+  .input-wrapper {
+    display: flex;
+    gap: 10px;
+    background: rgba(15,52,96,0.5);
+    border: 1.5px solid rgba(255,215,0,0.25);
+    border-radius: 50px;
+    padding: 8px 8px 8px 20px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .input-wrapper:focus-within {
+    border-color: var(--pika-yellow);
+    box-shadow: 0 0 20px rgba(255,215,0,0.15);
+  }
+
+  #chat-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  #chat-input::placeholder {
+    color: rgba(255,255,255,0.35);
+    font-style: italic;
+  }
+
+  .send-btn {
+    width: 42px;
+    height: 42px;
+    background: var(--pika-yellow);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    box-shadow: 0 0 12px rgba(255,215,0,0.3);
+  }
+
+  .send-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(255,215,0,0.5);
+  }
+
+  .send-btn:active { transform: scale(0.95); }
+
+  .input-hint {
+    text-align: center;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.25);
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Decorative bottom sparks */
+  .sparks {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 0;
+  }
+
+  .spark {
+    color: var(--pika-yellow);
+    font-size: 0.9rem;
+    opacity: 0.4;
+    animation: spark-twinkle 2s ease-in-out infinite;
+  }
+  .spark:nth-child(2) { animation-delay: 0.4s; }
+  .spark:nth-child(3) { animation-delay: 0.8s; }
+  .spark:nth-child(4) { animation-delay: 1.2s; }
+  .spark:nth-child(5) { animation-delay: 1.6s; }
+
+  @keyframes spark-twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(0.9); }
+    50% { opacity: 0.8; transform: scale(1.2); }
+  }
+
+  @media (max-width: 480px) {
+    .header-title { font-size: 1.7rem; }
+    .topics-bar { gap: 6px; }
+    .topic-pill { font-size: 0.68rem; padding: 4px 9px; }
+    .bubble { font-size: 0.83rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Animated lightning background -->
+<div class="lightning-bg" id="lightning-bg"></div>
+
+<div class="app-wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="pikachu-avatar">
+      <div class="pikachu-face">
+        <div class="pika-ear left"></div>
+        <div class="pika-ear right"></div>
+        <div class="pika-eye left"></div>
+        <div class="pika-eye right"></div>
+        <div class="pika-nose"></div>
+        <div class="pika-mouth"></div>
+        <div class="pika-cheek left"></div>
+        <div class="pika-cheek right"></div>
+      </div>
+      <div class="pika-bolt">⚡</div>
+    </div>
+    <div class="header-text">
+      <div class="header-title">PIKA ELECTROBOT</div>
+      <div class="header-subtitle">Your Electric Knowledge Companion</div>
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        CHARGED & READY
+      </div>
+    </div>
+  </header>
+
+  <!-- TOPIC PILLS -->
+  <div class="topics-bar">
+    <div class="topic-pill" onclick="askTopic('What is voltage?')">⚡ Voltage</div>
+    <div class="topic-pill" onclick="askTopic('How does a circuit work?')">🔌 Circuits</div>
+    <div class="topic-pill" onclick="askTopic('What is Ohm\'s Law?')">📐 Ohm\'s Law</div>
+    <div class="topic-pill" onclick="askTopic('What is a capacitor?')">🔋 Capacitors</div>
+    <div class="topic-pill" onclick="askTopic('How do transistors work?')">🔬 Transistors</div>
+    <div class="topic-pill" onclick="askTopic('What is AC vs DC?')">〰️ AC vs DC</div>
+    <div class="topic-pill" onclick="askTopic('What is a resistor?')">🟫 Resistors</div>
+    <div class="topic-pill" onclick="askTopic('How does LED work?')">💡 LEDs</div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="chat-container" id="chat-container">
+    <div class="welcome-card">
+      <div class="welcome-emoji">⚡🟡⚡</div>
+      <h3>PIKA PIKA! I'm ElectroBot!</h3>
+      <p>Ask me anything about <strong style="color:var(--pika-yellow)">electronics & electricity</strong> — circuits, components, Ohm's Law, semiconductors, and more! I'll zap you with knowledge!</p>
+    </div>
+  </div>
+
+  <!-- INPUT -->
+  <div class="input-section">
+    <div class="input-wrapper">
+      <input type="text" id="chat-input" placeholder="Ask about circuits, voltage, components... ⚡" maxlength="200" />
+      <button class="send-btn" onclick="sendMessage()" title="Send">⚡</button>
+    </div>
+    <div class="input-hint">Press Enter or ⚡ to send · Powered by Pikachu's electricity</div>
+  </div>
+
+  <div class="sparks">
+    <span class="spark">⚡</span>
+    <span class="spark">✦</span>
+    <span class="spark">⚡</span>
+    <span class="spark">✦</span>
+    <span class="spark">⚡</span>
+  </div>
+
+</div>
+
+<script>
+const responses = {
+  voltage: {
+    keys: ['voltage','volt','potential','emf','electromotive'],
+    answers: [
+      "⚡ <strong>Voltage</strong> is the electric potential difference between two points — it's what pushes electrons through a circuit! Measured in <span class='pika-tag'>Volts (V)</span>, named after Alessandro Volta. Think of it like water pressure — higher voltage = more push! Pika pika!",
+      "⚡ Voltage is like the <strong>electrical pressure</strong> in a circuit! A 9V battery has much more push than a 1.5V AA battery. Without voltage, electrons won't move and no current flows. Formula: <span class='pika-tag'>V = I × R</span>"
+    ]
+  },
+  current: {
+    keys: ['current','ampere','amp','amps','electron flow','amperage'],
+    answers: [
+      "⚡ <strong>Current</strong> is the flow of electric charges (electrons) through a conductor! Measured in <span class='pika-tag'>Amperes (A)</span>. Like water flowing in a pipe — more current = more electrons per second. Formula: <span class='pika-tag'>I = V / R</span>. Pika!",
+      "⚡ Electric current flows when electrons move through a conductor. <strong>DC</strong> (Direct Current) flows one way; <strong>AC</strong> (Alternating Current) reverses direction rapidly. Your phone uses DC; your wall outlet gives AC. Pika pika!"
+    ]
+  },
+  ohm: {
+    keys: ["ohm's law",'ohms law','ohm law','v=ir','i=v','resistance law'],
+    answers: [
+      "📐 <strong>Ohm's Law</strong> is one of the most important laws in electronics! It states: <span class='pika-tag'>V = I × R</span><br>• V = Voltage (Volts)<br>• I = Current (Amperes)<br>• R = Resistance (Ohms Ω)<br>If you know two values, you can always find the third! Pika pika! ⚡"
+    ]
+  },
+  resistance: {
+    keys: ['resistance','resistor','ohm','impede','impedance','resist'],
+    answers: [
+      "🟫 <strong>Resistors</strong> oppose the flow of electric current! Measured in <span class='pika-tag'>Ohms (Ω)</span>. They protect components from too much current. Color bands on a resistor tell you its value — it's a secret code! Red-Red-Brown = 220Ω. Pika!",
+      "🟫 <strong>Resistance</strong> is a material's opposition to current flow. Copper has very low resistance (great conductor!). Rubber has very high resistance (great insulator!). Formula: <span class='pika-tag'>R = V / I</span> ⚡"
+    ]
+  },
+  capacitor: {
+    keys: ['capacitor','capacitance','farad','charge store','cap '],
+    answers: [
+      "🔋 <strong>Capacitors</strong> store electric charge like a tiny rechargeable battery! Measured in <span class='pika-tag'>Farads (F)</span>. They charge up quickly and release energy fast — used in camera flashes, power supplies, and filters. They block DC but pass AC! Pika pika! ⚡",
+      "🔋 A capacitor consists of two conducting plates separated by an insulator (dielectric). Energy stored = <span class='pika-tag'>E = ½CV²</span>. Electrolytic capacitors are polarized (+ and – matter!). Ceramic capacitors work in both directions! Pika!"
+    ]
+  },
+  transistor: {
+    keys: ['transistor','mosfet','bjt','semiconductor switch','amplifier chip','npn','pnp'],
+    answers: [
+      "🔬 <strong>Transistors</strong> are the building blocks of modern electronics! They act as switches or amplifiers. A tiny current at the Base controls a larger current between Collector and Emitter. Billions of transistors fit in your smartphone's CPU! Pika pika! ⚡",
+      "🔬 There are two main types: <strong>BJT</strong> (Bipolar Junction Transistor — NPN/PNP) and <strong>MOSFET</strong> (Metal-Oxide-Semiconductor FET). MOSFETs are used in modern CPUs. BJTs are great for audio amplification! <span class='pika-tag'>Ib × hFE = Ic</span> Pika!"
+    ]
+  },
+  acdc: {
+    keys: ['ac vs dc','ac/dc','alternating current','direct current','ac dc','difference between ac','difference between dc'],
+    answers: [
+      "〰️ <strong>AC vs DC</strong>:<br>• <strong>AC (Alternating Current)</strong> — reverses direction 50/60 times per second. Used in homes. Easy to transmit long distances via transformers!<br>• <strong>DC (Direct Current)</strong> — flows one direction only. Used in batteries, phones, computers.<br>Thomas Edison loved DC; Nikola Tesla championed AC! Pika pika! ⚡"
+    ]
+  },
+  led: {
+    keys: ['led','light emitting','diode light','light bulb','lighting','leds'],
+    answers: [
+      "💡 <strong>LED</strong> (Light Emitting Diode) emits light when current flows through it! Much more efficient than incandescent bulbs — converts ~90% of energy to light vs ~10% for old bulbs! They only allow current in one direction (anode + to cathode –). Always use a resistor with LEDs! Pika! ⚡",
+      "💡 LEDs work through <strong>electroluminescence</strong> — electrons release energy as photons (light) when crossing a p-n junction. Different semiconductor materials produce different colors: GaAs → infrared, GaN → blue/white, GaP → green/red. Blue LEDs won the Nobel Prize in 2014! Pika pika!"
+    ]
+  },
+  diode: {
+    keys: ['diode','rectifier','one way','p-n junction','pn junction'],
+    answers: [
+      "⚡ A <strong>Diode</strong> is a one-way valve for electricity! Current flows from Anode (+) to Cathode (–) but NOT the other way. Used in rectifiers to convert AC to DC. The forward voltage drop is ~0.7V for silicon diodes. Zener diodes can conduct in reverse at a specific voltage! Pika pika!"
+    ]
+  },
+  inductor: {
+    keys: ['inductor','inductance','henry','coil','solenoid','electromagnetic induction'],
+    answers: [
+      "🌀 An <strong>Inductor</strong> stores energy in a magnetic field! It's basically a coil of wire. Measured in <span class='pika-tag'>Henries (H)</span>. Inductors oppose changes in current — they pass DC easily but resist AC. Used in transformers, motors, and power supplies. <span class='pika-tag'>V = L × dI/dt</span> Pika!"
+    ]
+  },
+  transformer: {
+    keys: ['transformer','step up','step down','transform voltage','primary coil','secondary coil'],
+    answers: [
+      "🔄 A <strong>Transformer</strong> changes voltage levels using electromagnetic induction! Step-UP transformers increase voltage; step-DOWN reduce it. The ratio of turns determines the voltage change: <span class='pika-tag'>V1/V2 = N1/N2</span>. That's how electricity travels long distances at high voltage then drops to safe home levels! Pika pika! ⚡"
+    ]
+  },
+  power: {
+    keys: ['power','watt','kilowatt','energy consumption','electric power','wattage'],
+    answers: [
+      "⚡ <strong>Electric Power</strong> is the rate of energy transfer! Formula: <span class='pika-tag'>P = V × I</span> (Watts = Volts × Amps). A 100W bulb uses 100 joules per second. Your microwave might use 1000W = 1kW. <strong>Tip:</strong> P = I²R = V²/R are also useful forms! Pika pika!"
+    ]
+  },
+  circuit: {
+    keys: ['circuit','series','parallel','schematic','breadboard','closed loop','open circuit','short circuit'],
+    answers: [
+      "🔌 <strong>Electric Circuits</strong> are closed loops where current flows!<br>• <strong>Series circuits</strong>: components in a line — same current, voltages add up<br>• <strong>Parallel circuits</strong>: components side by side — same voltage, currents add up<br>Christmas lights used to be series — one bulb out, all go dark! Now they're parallel. Pika pika! ⚡",
+      "🔌 A circuit needs: a <strong>power source</strong>, <strong>conductors</strong> (wires), and a <strong>load</strong> (component using power). Open circuit = break in the path (no current). Short circuit = unintended low-resistance path (dangerous — too much current!). Always use fuses for protection! Pika!"
+    ]
+  },
+  battery: {
+    keys: ['battery','cell','anode','cathode','lithium','alkaline','charge','recharge'],
+    answers: [
+      "🔋 <strong>Batteries</strong> convert chemical energy to electrical energy! The negative terminal (anode) releases electrons; the positive (cathode) accepts them. Common types: <span class='pika-tag'>Alkaline</span> (1.5V), <span class='pika-tag'>Lithium-ion</span> (3.7V, rechargeable), <span class='pika-tag'>Lead-acid</span> (car batteries, 12V). Pika pika! ⚡"
+    ]
+  },
+  semiconductor: {
+    keys: ['semiconductor','silicon','germanium','doping','p-type','n-type','chip','microchip','integrated circuit'],
+    answers: [
+      "🔬 <strong>Semiconductors</strong> are materials that conduct electricity only under certain conditions — between a conductor and insulator! Silicon is the most common. By <strong>doping</strong> (adding impurities), we create:<br>• <span class='pika-tag'>N-type</span>: extra electrons (negative carriers)<br>• <span class='pika-tag'>P-type</span>: holes (positive carriers)<br>Modern CPUs pack billions of transistors on a silicon chip! Pika pika! ⚡"
+    ]
+  },
+  motor: {
+    keys: ['motor','electric motor','motor work','dc motor','ac motor','generator'],
+    answers: [
+      "⚙️ <strong>Electric Motors</strong> convert electrical energy to mechanical energy using electromagnetism! When current flows through a coil in a magnetic field, it experiences a force (Lorentz force) and rotates. DC motors are in toys and fans; AC motors run industrial machines. Generators work in reverse — mechanical → electrical! Pika pika! ⚡"
+    ]
+  },
+  safety: {
+    keys: ['safety','electric shock','dangerous','hazard','insulation','ground','earthing','fuse','circuit breaker'],
+    answers: [
+      "⚠️ <strong>Electrical Safety</strong> is super important, Pika pika!<br>• Never touch live wires — even 50V can be dangerous<br>• Always use <span class='pika-tag'>insulated tools</span><br>• <span class='pika-tag'>Fuses & circuit breakers</span> protect against overcurrent<br>• <span class='pika-tag'>Grounding/earthing</span> provides a safe path for fault current<br>• Never work on live circuits — disconnect power first! Stay safe! ⚡"
+    ]
+  },
+  frequency: {
+    keys: ['frequency','hertz','hz','cycle per second','50hz','60hz','wavelength'],
+    answers: [
+      "〰️ <strong>Frequency</strong> is how many times per second AC current reverses direction, measured in <span class='pika-tag'>Hertz (Hz)</span>. Most countries use 50Hz; North America uses 60Hz. Radio waves, WiFi, and your microwave also use specific frequencies. Higher frequency = more energy per photon. AM radio: ~1 MHz, WiFi: 2.4 GHz! Pika pika! ⚡"
+    ]
+  },
+  hello: {
+    keys: ['hello','hi','hey','howdy','greetings','good morning','good evening','what\'s up','sup','yo'],
+    answers: [
+      "⚡ Pika pika! Hello there, Trainer! 👋 I'm <strong>ElectroBot</strong>, your electrifying guide to all things electronics and electricity! Ask me about circuits, components, laws, or anything electric — I'm fully charged and ready! ⚡🟡",
+      "⚡ Hey hey! Pikachu uses Thunderbolt! 🟡 Welcome to <strong>Pika ElectroBot</strong>! I know everything about volts, amps, circuits, and more. What electrical topic can I zap your brain with today? Pika pika!"
+    ]
+  },
+  thanks: {
+    keys: ['thank','thanks','thank you','thx','appreciate','helpful','great','awesome','cool','nice','good'],
+    answers: [
+      "⚡ Pika pika! You're welcome, Trainer! 🟡 Always happy to share the power of electrical knowledge! Got more questions? I'm still fully charged! ⚡✨",
+      "🟡 Glad I could help! Remember — knowledge is like electricity: the more you let it flow, the more powerful you become! Pika pika! ⚡"
+    ]
+  }
+};
+
+const unknownResponses = [
+  "⚡ Pika pika! That's a bit outside my electric expertise! 🤔 I specialize in <strong>electronics & electricity</strong> — try asking about voltage, circuits, Ohm's Law, transistors, capacitors, LEDs, or AC/DC power! I'll zap you with the right answer! ⚡",
+  "🟡 Hmm, my circuits don't recognize that one! I know lots about <strong>electrical components, circuits, and electronics concepts</strong>. Try asking me about resistors, inductors, semiconductors, or electric motors! Pika pika! ⚡",
+  "⚡ That question doesn't quite spark my knowledge! I'm wired for <strong>electronics & electricity topics</strong>. Ask me about voltage, current, power, transformers, or any electronic component! Pika! 🟡"
+];
+
+let msgIndex = {};
+
+function getResponse(input) {
+  const text = input.toLowerCase().trim();
+  for (const [key, data] of Object.entries(responses)) {
+    if (data.keys.some(k => text.includes(k))) {
+      if (!msgIndex[key]) msgIndex[key] = 0;
+      const ans = data.answers[msgIndex[key] % data.answers.length];
+      msgIndex[key]++;
+      return ans;
+    }
+  }
+  return unknownResponses[Math.floor(Math.random() * unknownResponses.length)];
+}
+
+function addMessage(html, isUser) {
+  const container = document.getElementById('chat-container');
+  const msg = document.createElement('div');
+  msg.className = `message ${isUser ? 'user' : 'bot'}`;
+  if (isUser) {
+    msg.innerHTML = `
+      <div class="msg-avatar user-av">YOU</div>
+      <div class="bubble">${html}</div>`;
+  } else {
+    msg.innerHTML = `
+      <div class="msg-avatar pika">⚡</div>
+      <div class="bubble">${html}</div>`;
+  }
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+}
+
+function showTyping() {
+  const container = document.getElementById('chat-container');
+  const typing = document.createElement('div');
+  typing.className = 'typing-indicator';
+  typing.id = 'typing';
+  typing.innerHTML = `
+    <div class="msg-avatar pika">⚡</div>
+    <div class="typing-bubble">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>`;
+  container.appendChild(typing);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  addMessage(text, true);
+  input.value = '';
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    addMessage(getResponse(text), false);
+  }, 900 + Math.random() * 500);
+}
+
+function askTopic(q) {
+  document.getElementById('chat-input').value = q;
+  sendMessage();
+}
+
+document.getElementById('chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+// Generate animated lightning bolts
+const bg = document.getElementById('lightning-bg');
+for (let i = 0; i < 12; i++) {
+  const span = document.createElement('span');
+  const height = 80 + Math.random() * 150;
+  span.style.cssText = `
+    left: ${Math.random() * 100}%;
+    height: ${height}px;
+    animation-duration: ${4 + Math.random() * 6}s;
+    animation-delay: ${Math.random() * 5}s;
+    opacity: 0;
+  `;
+  bg.appendChild(span);
+}
+</script>
+</body>
+</html>
